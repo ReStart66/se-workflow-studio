@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+prototype/data/*.db
+prototype/data/*.db-*
+.idea/
+.vscode/
+*.log
+.DS_Store

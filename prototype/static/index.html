@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SE Workflow Studio · 设计规格到任务编排</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div class="brand-copy"><strong>ASF</strong><span>SE Workflow Studio</span></div>
+      </div>
+      <div class="workspace-chip"><span class="workspace-dot"></span><div><small>工作空间</small><strong>第 9 周 · 第 11 组</strong></div></div>
+      <nav class="nav">
+        <div class="nav-group-label">工作流</div>
+        <button class="nav-item active" data-view="spec"><span class="nav-icon">◈</span><span>设计规格</span></button>
+        <button class="nav-item" data-view="tasks"><span class="nav-icon">☷</span><span>任务分解</span></button>
+        <button class="nav-item" data-view="schedule"><span class="nav-icon">▷</span><span>执行编排</span></button>
+        <div class="nav-group-label second">平台能力</div>
+        <button class="nav-item muted" disabled><span class="nav-icon">◇</span><span>工作流模板</span></button>
+        <button class="nav-item muted" disabled><span class="nav-icon">▤</span><span>DeepSeek 模型</span></button>
+        <button class="nav-item muted" disabled><span class="nav-icon">⌁</span><span>Git 关联</span></button>
+      </nav>
+      <div class="sidebar-foot"><div class="mini-status"><span class="pulse-dot"></span> Mock PM Agent 在线</div><div class="version">通用 SE Workflow · v1.0</div></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <div class="breadcrumb">课堂作业 2 <span>/</span> SE Workflow Studio <span>/</span> 原型</div>
+          <div class="change-line"><span class="change-glyph">⌘</span><h1 id="top-workflow-title">通用软件工程工作流</h1><span id="workflow-status" class="badge">待生成</span><span id="pm-model-badge" class="badge sync">deepseek-reasoner</span></div>
+        </div>
+        <div class="top-actions"><span class="connection-state"><span class="connection-dot"></span> Mock 演示模式</span><button id="new-workflow-btn" class="button ghost">新建工作流</button></div>
+      </header>
+
+      <div class="tabbar">
+        <button class="tab active" data-view="spec">设计规格</button>
+        <button class="tab" data-view="tasks">任务分解</button>
+        <button class="tab" data-view="schedule">执行编排</button>
+        <span class="tab-hint">输入设计规格 → PM Agent 分解任务 → 编排器生成执行计划</span>
+      </div>
+
+      <section id="view-spec" class="view active">
+        <div class="hero-grid spec-hero">
+          <article class="card spec-card">
+            <div class="card-eyebrow">DESIGN SPEC INPUT</div>
+            <div class="card-header">
+              <div><h2>输入产品设计规格</h2><p class="section-subtitle">把产品想法、用户场景、核心功能写成设计规格，交给 PM Agent 做任务分解。</p></div>
+              <span class="badge subtle">通用输入</span>
+            </div>
+            <textarea id="spec-input" class="spec-input" placeholder="例如：我要做一个类似小红书的内容社区，支持图文笔记、视频、搜索推荐、关注互动和电商。"></textarea>
+            <div class="sample-row"><span>示例：</span><button class="sample-btn" data-sample="xhs">小红书</button><button class="sample-btn" data-sample="wechat">微信</button><button class="sample-btn" data-sample="generic">通用产品</button></div>
+            <div class="button-row spec-actions"><button id="generate-btn" class="button primary">生成任务分解 <span>→</span></button><button id="clear-spec-btn" class="button ghost">清空</button></div>
+          </article>
+
+          <article class="card pm-agent-card">
+            <div class="card-header"><div><div class="card-eyebrow">PM AGENT</div><h2>任务分解摘要</h2></div><span class="badge purple">deepseek-reasoner</span></div>
+            <div id="pm-empty" class="pm-empty"><div class="pm-orb">PM</div><strong>等待设计规格</strong><p>生成后会展示功能域、任务数量、工时和编排天数。</p></div>
+            <div id="pm-summary" class="pm-summary hidden">
+              <div class="pm-agent-line"><span class="pm-orb small">PM</span><div><strong>PM Agent</strong><small>Mock DeepSeek 任务分解</small></div></div>
+              <p id="pm-summary-text"></p>
+              <div class="stat-grid"><div><span>功能域</span><strong id="stat-features">0</strong></div><div><span>任务数</span><strong id="stat-tasks">0</strong></div><div><span>总工时</span><strong id="stat-hours">0h</strong></div><div><span>编排周期</span><strong id="stat-days">0天</strong></div></div>
+              <div id="feature-tags" class="feature-tags"></div>
+            </div>
+          </article>
+        </div>
+
+        <article class="card recent-card"><div class="card-header"><div><div class="card-eyebrow">RECENT WORKFLOWS</div><h2>最近生成的工作流</h2></div><span class="badge subtle" id="workflow-count-badge">0 个</span></div><div id="recent-workflows" class="recent-workflows"><div class="empty-note">还没有工作流，先输入一个设计规格。</div></div></article>
+      </section>
+
+      <section id="view-tasks" class="view">
+        <div class="section-heading"><div><div class="card-eyebrow">PM AGENT OUTPUT</div><h2>开发任务分解</h2><p id="task-view-subtitle">从设计规格提取功能域，并生成带依赖、角色和工时的开发任务。</p></div><button class="button small ghost" data-view="spec">返回设计规格</button></div>
+        <article class="card task-tree-card">
+          <div class="card-header"><div><div class="card-eyebrow">WBS TREE</div><h2>任务分解结构</h2><p class="section-subtitle">从产品主干到阶段，再到具体任务和属性，按从上到下的层级展开。</p></div><span class="badge subtle">主干 → 阶段 → 任务</span></div>
+          <div id="task-tree" class="wbs-tree"><div class="empty-note">生成工作流后会显示任务分解树。</div></div>
+        </article>
+        <article class="card task-table-card">
+          <div class="card-header task-table-header"><div><div class="card-eyebrow">TASK DETAILS</div><h2>任务明细表</h2></div><span class="badge subtle">可点击任务行查看详情</span></div>
+          <div class="task-table-wrap"><table class="task-table"><thead><tr><th>编号</th><th>开发任务</th><th>角色</th><th>阶段</th><th>优先级</th><th>工时</th><th>依赖</th><th>状态</th></tr></thead><tbody id="task-table-body"><tr><td colspan="8" class="table-empty">尚未生成任务。</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="view-schedule" class="view">
+        <div class="execution-toolbar"><div><div class="card-eyebrow">ORCHESTRATOR SCHEDULE</div><h2>执行编排与可视化</h2></div><div class="toolbar-actions"><button id="run-btn" class="button primary">模拟执行</button><button id="cancel-run-btn" class="button ghost">取消</button><button id="reset-run-btn" class="button ghost">重置编排</button></div></div>
+        <div class="schedule-layout">
+          <article class="card gantt-card"><div class="card-header"><div><div class="card-eyebrow">TASK SCHEDULE</div><h2>任务排期甘特图</h2></div><span id="schedule-status" class="badge">待生成</span></div><div id="gantt-root" class="gantt-root"><div class="empty-note">生成工作流后会显示任务排期。</div></div></article>
+          <aside class="card task-inspector"><div class="card-header"><div><div class="card-eyebrow">TASK INSPECTOR</div><h2 id="inspector-task-name">选择一个任务</h2></div><span id="inspector-task-status" class="badge">—</span></div><div id="inspector-task-body" class="task-inspector-body"><div class="empty-note">点击甘特图中的任务查看详情。</div></div></aside>
+        </div>
+        <article class="card timeline-card"><div class="card-header"><div><div class="card-eyebrow">EXECUTION LOG</div><h2>编排执行日志</h2></div><span id="event-count" class="badge subtle">0 条</span></div><div id="timeline" class="timeline empty">生成并执行工作流后，这里会显示 PM Agent 和编排器事件。</div></article>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

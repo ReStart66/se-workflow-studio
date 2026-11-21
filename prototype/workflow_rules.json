@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "default": {
+    "product_name": "通用产品",
+    "title": "通用软件产品开发工作流",
+    "features": ["用户与权限", "核心业务", "搜索与推荐", "通知与消息"],
+    "pm_model": "deepseek-reasoner",
+    "role_models": {
+      "PM": "deepseek-reasoner",
+      "架构": "deepseek-chat",
+      "后端": "deepseek-chat",
+      "前端": "deepseek-chat",
+      "QA": "deepseek-chat",
+      "DevOps": "deepseek-chat"
+    }
+  },
+  "profiles": [
+    {
+      "keywords": ["微信", "wechat", "即时通讯"],
+      "product_name": "微信",
+      "title": "即时通讯产品开发工作流",
+      "features": ["即时通讯", "通讯录与关系链", "朋友圈", "支付", "小程序"]
+    },
+    {
+      "keywords": ["小红书", "redbook", "内容社区"],
+      "product_name": "小红书",
+      "title": "内容社区产品开发工作流",
+      "features": ["内容发布", "图文与视频浏览", "搜索与推荐", "关注与互动", "电商"]
+    }
+  ]
+}
