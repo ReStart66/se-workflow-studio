@@ -143,6 +143,81 @@ function taskStatusBadge(status) {
   return `<span class="badge ${statusClass(status)}">${STATUS_LABELS[status] || status}</span>`;
 }
 
+function aggregateStatus(tasks) {
+  if (!tasks.length) return "PENDING";
+  if (tasks.every((task) => task.status === "SUCCEEDED")) return "SUCCEEDED";
+  if (tasks.some((task) => task.status === "FAILED")) return "FAILED";
+  if (tasks.some((task) => task.status === "RUNNING")) return "RUNNING";
+  if (tasks.some((task) => task.status === "CANCELLED")) return "CANCELLED";
+  return "PENDING";
+}
+
+function flowNodeHtml(task, className, style, title, meta) {
+  return `<div class="task-flow-node ${className} ${statusClass(task?.status)}" data-task-id="${escapeHtml(task?.id || "")}" style="${style}">
+    <div class="task-flow-node-head"><span>${escapeHtml(task?.task_key || "")}</span><span class="node-status">${STATUS_LABELS[task?.status] || task?.status || "待生成"}</span></div>
+    <strong>${escapeHtml(title)}</strong><small>${escapeHtml(meta)}</small>
+  </div>`;
+}
+
+function groupNodeHtml(tasks, className, style, title) {
+  const status = aggregateStatus(tasks);
+  const totalHours = tasks.reduce((sum, task) => sum + task.estimate_hours, 0);
+  return `<div class="task-flow-node group-node ${className} ${statusClass(status)}" data-task-id="${escapeHtml(tasks[0]?.id || "")}" style="${style}">
+    <div class="task-flow-node-head"><span>${tasks.length} 个任务</span><span class="node-status">${STATUS_LABELS[status] || status}</span></div>
+    <strong>${escapeHtml(title)}</strong><small>${totalHours} 人时 · 并行开发</small>
+    <div class="group-tags">${tasks.slice(0, 5).map((task) => `<i>${escapeHtml(task.task_key)}</i>`).join("")}${tasks.length > 5 ? `<i>+${tasks.length - 5}</i>` : ""}</div>
+  </div>`;
+}
+
+function renderTaskFlow() {
+  const root = $("#task-flow");
+  const wf = state.workflow;
+  if (!wf) {
+    root.innerHTML = '<div class="empty-note">生成工作流后会显示任务流程图。</div>';
+    return;
+  }
+  const tasks = wf.tasks;
+  const taskByKey = Object.fromEntries(tasks.map((task) => [task.task_key, task]));
+  const req = taskByKey["T01"];
+  const arch = taskByKey["T02"];
+  const dataApi = taskByKey["T03"];
+  const uiFlow = taskByKey["T04"];
+  const backendTasks = tasks.filter((task) => task.role === "后端" && task.phase === "开发");
+  const security = tasks.find((task) => task.name.includes("权限、安全"));
+  const backendGroup = security ? [...backendTasks, security] : backendTasks;
+  const frontendTasks = tasks.filter((task) => task.role === "前端" && task.phase === "开发");
+  const qa = tasks.find((task) => task.role === "QA");
+  const devops = tasks.find((task) => task.role === "DevOps");
+  const acceptance = tasks.find((task) => task.role === "PM" && task.phase === "发布");
+  const svg = `<svg class="task-flow-edges" viewBox="0 0 1000 1060" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="flowArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#93a4c0"></path></marker></defs>
+    <path d="M500 64 L500 96" marker-end="url(#flowArrow)"></path>
+    <path d="M500 172 L500 200" marker-end="url(#flowArrow)"></path>
+    <path d="M500 276 L500 292 L275 292 L275 310" marker-end="url(#flowArrow)"></path>
+    <path d="M500 276 L500 292 L725 292 L725 310" marker-end="url(#flowArrow)"></path>
+    <path d="M275 396 L275 420 L245 420 L245 450" marker-end="url(#flowArrow)"></path>
+    <path d="M725 396 L725 420 L755 420 L755 450" marker-end="url(#flowArrow)"></path>
+    <path d="M245 600 L245 630 L500 630 L500 660" marker-end="url(#flowArrow)"></path>
+    <path d="M755 600 L755 630 L500 630 L500 660" marker-end="url(#flowArrow)"></path>
+    <path d="M500 742 L500 770" marker-end="url(#flowArrow)"></path>
+    <path d="M500 846 L500 880" marker-end="url(#flowArrow)"></path>
+    <path d="M500 956 L500 990" marker-end="url(#flowArrow)"></path>
+  </svg>`;
+  const nodes = [
+    `<div class="task-flow-start" style="left:410px;top:18px;width:180px;height:46px"><span>开始</span></div>`,
+    flowNodeHtml(req, "node-requirement", "left:390px;top:96px;width:220px;height:76px", req?.name || "需求分析", `${req?.role || ""} · ${req?.estimate_hours || 0}h · ${req?.priority || ""}`),
+    flowNodeHtml(arch, "node-architecture", "left:390px;top:200px;width:220px;height:76px", arch?.name || "架构设计", `${arch?.role || ""} · ${arch?.estimate_hours || 0}h · ${arch?.priority || ""}`),
+    flowNodeHtml(dataApi, "node-data", "left:145px;top:310px;width:260px;height:86px", dataApi?.name || "数据模型与接口设计", `${dataApi?.role || ""} · ${dataApi?.estimate_hours || 0}h · 依赖 ${dataApi?.dependencies?.join("、") || "无"}`),
+    flowNodeHtml(uiFlow, "node-ui", "left:595px;top:310px;width:260px;height:86px", uiFlow?.name || "交互流程与页面规划", `${uiFlow?.role || ""} · ${uiFlow?.estimate_hours || 0}h · 依赖 ${uiFlow?.dependencies?.join("、") || "无"}`),
+    groupNodeHtml(backendGroup, "node-backend", "left:80px;top:450px;width:330px;height:150px", "后端功能开发"),
+    groupNodeHtml(frontendTasks, "node-frontend", "left:590px;top:450px;width:330px;height:150px", "前端体验开发"),
+    flowNodeHtml(qa, "node-qa", "left:390px;top:660px;width:220px;height:82px", qa?.name || "集成测试与验收测试", `${qa?.role || ""} · ${qa?.estimate_hours || 0}h · 汇合质量检查`),
+    flowNodeHtml(devops, "node-devops", "left:390px;top:770px;width:220px;height:76px", devops?.name || "部署、监控与发布", `${devops?.role || ""} · ${devops?.estimate_hours || 0}h`),
+    flowNodeHtml(acceptance, "node-acceptance", "left:390px;top:880px;width:220px;height:76px", acceptance?.name || "需求验收与发布确认", `${acceptance?.role || ""} · ${acceptance?.estimate_hours || 0}h`),
+    `<div class="task-flow-end" style="left:410px;top:990px;width:180px;height:46px"><span>结束</span></div>`
+  ].join("");
+  root.innerHTML = svg + nodes;
+}
+
 function renderTaskTree() {
   const root = $("#task-tree");
   const wf = state.workflow;
@@ -178,6 +253,7 @@ function renderTaskTable() {
   $("#task-view-subtitle").textContent = wf ? `${wf.title} · PM Agent 生成 ${wf.stats.task_count} 个任务` : "从设计规格提取功能域，并生成带依赖、角色和工时的开发任务。";
   if (!wf) {
     body.innerHTML = '<tr><td colspan="8" class="table-empty">尚未生成任务。</td></tr>';
+    renderTaskFlow();
     renderTaskTree();
     return;
   }
@@ -193,6 +269,7 @@ function renderTaskTable() {
       <td>${taskStatusBadge(task.status)}</td>
     </tr>
   `).join("");
+  renderTaskFlow();
   renderTaskTree();
 }
 
@@ -395,7 +472,8 @@ async function bootstrap() {
       renderAll();
     }
     $("#spec-input").value = SAMPLE_SPECS.xhs;
-    showView("spec");
+    const requestedView = new URLSearchParams(location.search).get("view");
+    showView(["spec", "tasks", "schedule"].includes(requestedView) ? requestedView : "spec");
   } catch (error) {
     showToast(error.message, "error");
   }

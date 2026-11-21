@@ -73,6 +73,11 @@
 
       <section id="view-tasks" class="view">
         <div class="section-heading"><div><div class="card-eyebrow">PM AGENT OUTPUT</div><h2>开发任务分解</h2><p id="task-view-subtitle">从设计规格提取功能域，并生成带依赖、角色和工时的开发任务。</p></div><button class="button small ghost" data-view="spec">返回设计规格</button></div>
+        <article class="card task-flow-card">
+          <div class="card-header"><div><div class="card-eyebrow">TASK FLOW</div><h2>任务流程图</h2><p class="section-subtitle">从开始、规划、设计、开发、测试、发布到结束，按依赖关系展示任务流转。</p></div><span class="badge subtle">开始 → 结束</span></div>
+          <div class="task-flow-scroll"><div id="task-flow" class="task-flow-canvas"><div class="empty-note">生成工作流后会显示任务流程图。</div></div></div>
+          <div class="flow-legend"><span><i class="dot pending"></i>等待</span><span><i class="dot running"></i>运行中</span><span><i class="dot passed"></i>已完成</span><span><i class="dot failed"></i>失败</span></div>
+        </article>
         <article class="card task-tree-card">
           <div class="card-header"><div><div class="card-eyebrow">WBS TREE</div><h2>任务分解结构</h2><p class="section-subtitle">从产品主干到阶段，再到具体任务和属性，按从上到下的层级展开。</p></div><span class="badge subtle">主干 → 阶段 → 任务</span></div>
           <div id="task-tree" class="wbs-tree"><div class="empty-note">生成工作流后会显示任务分解树。</div></div>
