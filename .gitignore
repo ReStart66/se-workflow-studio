@@ -6,3 +6,4 @@ prototype/data/*.db-*
 .vscode/
 *.log
 .DS_Store
+*.pptx
